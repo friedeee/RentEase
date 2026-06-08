@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+}
+
+model Proprietaire {
+  id        String   @id @default(cuid())
+  nom       String
+  prenom    String
+  telephone String
+  email     String
+  adresse   String
+  biens     Bien[]
+  createdAt DateTime @default(now())
+}
+
+model Bien {
+  id             String       @id @default(cuid())
+  nom            String
+  adresse        String
+  type           String
+  proprietaire   Proprietaire @relation(fields: [proprietaireId], references: [id])
+  proprietaireId String
+  chambres       Chambre[]
+  createdAt      DateTime     @default(now())
+}
+
+model Chambre {
+  id         String    @id @default(cuid())
+  numero     String
+  superficie Float
+  loyer      Float
+  statut     String    @default("libre")
+  bien       Bien      @relation(fields: [bienId], references: [id])
+  bienId     String
+  contrats   Contrat[]
+  createdAt  DateTime  @default(now())
+}
+
+model Locataire {
+  id         String    @id @default(cuid())
+  nom        String
+  prenom     String
+  telephone  String
+  email      String
+  cni        String
+  profession String
+  contrats   Contrat[]
+  createdAt  DateTime  @default(now())
+}
+
+model Contrat {
+  id               String             @id @default(cuid())
+  locataire        Locataire          @relation(fields: [locataireId], references: [id])
+  locataireId      String
+  chambre          Chambre            @relation(fields: [chambreId], references: [id])
+  chambreId        String
+  dateDebut        DateTime
+  dateFin          DateTime?
+  loyer            Float
+  caution          Float
+  statut           String             @default("actif")
+  paiements        Paiement[]
+  createdAt        DateTime           @default(now())
+  ReglementContrat ReglementContrat[]
+}
+
+model Paiement {
+  id           String   @id @default(cuid())
+  contrat      Contrat  @relation(fields: [contratId], references: [id])
+  contratId    String
+  montant      Float
+  datePaiement DateTime @default(now())
+  moisConcerne String
+  statut       String   @default("paye")
+  recu         Recu?
+  createdAt    DateTime @default(now())
+}
+
+model Recu {
+  id             String   @id @default(cuid())
+  paiement       Paiement @relation(fields: [paiementId], references: [id])
+  paiementId     String   @unique
+  numeroRecu     String   @unique
+  dateGeneration DateTime @default(now())
+}
+
+model ReglementContrat {
+  id        String   @id @default(cuid())
+  contrat   Contrat  @relation(fields: [contratId], references: [id])
+  contratId String
+  texte     String
+  createdAt DateTime @default(now())
+}
