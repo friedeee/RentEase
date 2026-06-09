@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Toast from '@/app/components/Toast'
 
 type Chambre = {
   id: string
@@ -21,6 +22,7 @@ export default function ChambresPage() {
   const [chambres, setChambres] = useState<Chambre[]>([])
   const [biens, setBiens] = useState<Bien[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null)
   const [form, setForm] = useState({
     numero: '', superficie: '', loyer: '', bienId: ''
   })
@@ -44,28 +46,50 @@ export default function ChambresPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await fetch('/api/chambres', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        superficie: parseFloat(form.superficie),
-        loyer: parseFloat(form.loyer)
+    try {
+      const res = await fetch('/api/chambres', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          superficie: parseFloat(form.superficie),
+          loyer: parseFloat(form.loyer)
+        })
       })
-    })
-    setForm({ numero: '', superficie: '', loyer: '', bienId: '' })
-    setShowForm(false)
-    fetchChambres()
+      if (res.ok) {
+        setForm({ numero: '', superficie: '', loyer: '', bienId: '' })
+        setShowForm(false)
+        fetchChambres()
+        setToast({ message: 'Chambre ajoutée avec succès !', type: 'success' })
+      } else {
+        setToast({ message: "Erreur lors de l'ajout !", type: 'error' })
+      }
+    } catch {
+      setToast({ message: 'Erreur serveur !', type: 'error' })
+    }
   }
 
   const handleDelete = async (id: string) => {
-    await fetch(`/api/chambres/${id}`, { method: 'DELETE' })
-    fetchChambres()
+    try {
+      const res = await fetch(`/api/chambres/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        fetchChambres()
+        setToast({ message: 'Chambre supprimée !', type: 'success' })
+      } else {
+        setToast({ message: 'Erreur lors de la suppression !', type: 'error' })
+      }
+    } catch {
+      setToast({ message: 'Erreur serveur !', type: 'error' })
+    }
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Sidebar */}
+
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
+
       <div className="fixed left-0 top-0 h-full w-64 bg-blue-600 text-white p-6">
         <h1 className="text-2xl font-bold mb-8">RentEase</h1>
         <nav className="space-y-2">
@@ -80,19 +104,15 @@ export default function ChambresPage() {
         </nav>
       </div>
 
-      {/* Main */}
       <div className="ml-64 p-8">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-slate-800">Chambres</h2>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
+          <button onClick={() => setShowForm(!showForm)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
             + Ajouter
           </button>
         </div>
 
-        {/* Formulaire */}
         {showForm && (
           <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
             <h3 className="text-lg font-semibold mb-4 text-slate-800">Nouvelle chambre</h3>
@@ -128,7 +148,6 @@ export default function ChambresPage() {
           </div>
         )}
 
-        {/* Tableau */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full">
             <thead className="bg-slate-100 border-b">
@@ -144,18 +163,18 @@ export default function ChambresPage() {
             <tbody>
               {chambres.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-slate-400">
+                  <td colSpan={6} className="text-center py-8 text-slate-600">
                     Aucune chambre enregistrée
                   </td>
                 </tr>
               ) : (
                 chambres.map(c => (
-                  <tr key={c.id} className="border-b hover:bg-slate-100">
+                  <tr key={c.id} className="border-b hover:bg-slate-50">
                     <td className="px-6 py-4 text-slate-800">{c.numero}</td>
                     <td className="px-6 py-4 text-slate-800">{c.bien?.nom}</td>
                     <td className="px-6 py-4 text-slate-800">{c.superficie} m²</td>
                     <td className="px-6 py-4 text-slate-800">{c.loyer.toLocaleString()} FCFA</td>
-                    <td className="px-6 py-4 text-slate-800">
+                    <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         c.statut === 'libre'
                           ? 'bg-green-100 text-green-700'
@@ -164,11 +183,9 @@ export default function ChambresPage() {
                         {c.statut}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-800">
-                      <button
-                        onClick={() => handleDelete(c.id)}
-                        className="text-red-500 hover:text-red-700 text-sm"
-                      >
+                    <td className="px-6 py-4">
+                      <button onClick={() => handleDelete(c.id)}
+                        className="text-red-500 hover:text-red-700 text-sm">
                         Supprimer
                       </button>
                     </td>
