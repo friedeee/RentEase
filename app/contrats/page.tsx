@@ -151,12 +151,12 @@ export default function ContratsPage() {
         {/* Formulaire */}
         {showForm && (
           <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-            <h3 className="text-lg font-semibold mb-4">Nouveau contrat</h3>
+            <h3 className="text-lg font-semibold mb-4 text-slate-800">Nouveau contrat</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <select required value={form.locataireId}
                   onChange={e => setForm({...form, locataireId: e.target.value})}
-                  className="border border-slate-300 rounded-lg px-4 py-2">
+                  className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800">
                   <option value="">-- Locataire --</option>
                   {locataires.map(l => (
                     <option key={l.id} value={l.id}>
@@ -166,7 +166,7 @@ export default function ContratsPage() {
                 </select>
                 <select required value={form.chambreId}
                   onChange={e => setForm({...form, chambreId: e.target.value})}
-                  className="border border-slate-300 rounded-lg px-4 py-2">
+                  className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800">
                   <option value="">-- Chambre libre --</option>
                   {chambres.map(c => (
                     <option key={c.id} value={c.id}>
@@ -178,20 +178,20 @@ export default function ContratsPage() {
                   <label className="text-sm text-slate-600 mb-1 block">Date début</label>
                   <input required type="date" value={form.dateDebut}
                     onChange={e => setForm({...form, dateDebut: e.target.value})}
-                    className="w-full border border-slate-300 rounded-lg px-4 py-2" />
+                    className="w-full border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800" />
                 </div>
                 <div>
                   <label className="text-sm text-slate-600 mb-1 block">Date fin (optionnel)</label>
                   <input type="date" value={form.dateFin}
                     onChange={e => setForm({...form, dateFin: e.target.value})}
-                    className="w-full border border-slate-300 rounded-lg px-4 py-2" />
+                    className="w-full border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800" />
                 </div>
                 <input required type="number" placeholder="Loyer mensuel (FCFA)" value={form.loyer}
                   onChange={e => setForm({...form, loyer: e.target.value})}
-                  className="border border-slate-300 rounded-lg px-4 py-2" />
+                  className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800" />
                 <input required type="number" placeholder="Caution (FCFA)" value={form.caution}
                   onChange={e => setForm({...form, caution: e.target.value})}
-                  className="border border-slate-300 rounded-lg px-4 py-2" />
+                  className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800" />
               </div>
 
               {/* Règlements */}
@@ -201,8 +201,8 @@ export default function ContratsPage() {
                 </h4>
                 <ul className="space-y-2 mb-4">
                   {reglements.map((r, i) => (
-                    <li key={i} className="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-lg">
-                      <span className="text-sm text-slate-700">• {r}</span>
+                    <li key={i} className="flex items-center justify-between bg-slate-100 px-3 py-2 rounded-lg">
+                      <span className="text-sm text-slate-800">• {r}</span>
                       <button type="button" onClick={() => removeReglement(i)}
                         className="text-red-400 hover:text-red-600 text-xs ml-2">
                         ✕
@@ -242,7 +242,7 @@ export default function ContratsPage() {
         {/* Tableau */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b">
+            <thead className="bg-slate-100 border-b">
               <tr>
                 <th className="text-left px-6 py-3 text-slate-600 font-medium">Locataire</th>
                 <th className="text-left px-6 py-3 text-slate-600 font-medium">Chambre</th>
@@ -263,18 +263,18 @@ export default function ContratsPage() {
               ) : (
                 contrats.map(c => (
                   <tr key={c.id} className="border-b hover:bg-slate-50">
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-slate-800">
                       {c.locataire?.nom} {c.locataire?.prenom}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-slate-800">
                       {c.chambre?.numero} — {c.chambre?.bien?.nom}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-slate-800">
                       {new Date(c.dateDebut).toLocaleDateString('fr-FR')}
                     </td>
-                    <td className="px-6 py-4">{c.loyer.toLocaleString()} FCFA</td>
-                    <td className="px-6 py-4">{c.caution.toLocaleString()} FCFA</td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-slate-800">{c.loyer.toLocaleString()} FCFA</td>
+                    <td className="px-6 py-4 text-slate-800">{c.caution.toLocaleString()} FCFA</td>
+                    <td className="px-6 py-4 text-slate-800">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         c.statut === 'actif'
                           ? 'bg-green-100 text-green-700'

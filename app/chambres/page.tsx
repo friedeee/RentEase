@@ -95,20 +95,20 @@ export default function ChambresPage() {
         {/* Formulaire */}
         {showForm && (
           <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-            <h3 className="text-lg font-semibold mb-4">Nouvelle chambre</h3>
+            <h3 className="text-lg font-semibold mb-4 text-slate-800">Nouvelle chambre</h3>
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
               <input required placeholder="Numéro" value={form.numero}
                 onChange={e => setForm({...form, numero: e.target.value})}
-                className="border border-slate-300 rounded-lg px-4 py-2" />
+                className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800" />
               <input required type="number" placeholder="Superficie (m²)" value={form.superficie}
                 onChange={e => setForm({...form, superficie: e.target.value})}
-                className="border border-slate-300 rounded-lg px-4 py-2" />
+                className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800" />
               <input required type="number" placeholder="Loyer mensuel (FCFA)" value={form.loyer}
                 onChange={e => setForm({...form, loyer: e.target.value})}
-                className="border border-slate-300 rounded-lg px-4 py-2" />
+                className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800" />
               <select required value={form.bienId}
                 onChange={e => setForm({...form, bienId: e.target.value})}
-                className="border border-slate-300 rounded-lg px-4 py-2">
+                className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800">
                 <option value="">-- Bien immobilier --</option>
                 {biens.map(b => (
                   <option key={b.id} value={b.id}>{b.nom}</option>
@@ -131,7 +131,7 @@ export default function ChambresPage() {
         {/* Tableau */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b">
+            <thead className="bg-slate-100 border-b">
               <tr>
                 <th className="text-left px-6 py-3 text-slate-600 font-medium">Numéro</th>
                 <th className="text-left px-6 py-3 text-slate-600 font-medium">Bien</th>
@@ -150,12 +150,12 @@ export default function ChambresPage() {
                 </tr>
               ) : (
                 chambres.map(c => (
-                  <tr key={c.id} className="border-b hover:bg-slate-50">
-                    <td className="px-6 py-4">{c.numero}</td>
-                    <td className="px-6 py-4">{c.bien?.nom}</td>
-                    <td className="px-6 py-4">{c.superficie} m²</td>
-                    <td className="px-6 py-4">{c.loyer.toLocaleString()} FCFA</td>
-                    <td className="px-6 py-4">
+                  <tr key={c.id} className="border-b hover:bg-slate-100">
+                    <td className="px-6 py-4 text-slate-800">{c.numero}</td>
+                    <td className="px-6 py-4 text-slate-800">{c.bien?.nom}</td>
+                    <td className="px-6 py-4 text-slate-800">{c.superficie} m²</td>
+                    <td className="px-6 py-4 text-slate-800">{c.loyer.toLocaleString()} FCFA</td>
+                    <td className="px-6 py-4 text-slate-800">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         c.statut === 'libre'
                           ? 'bg-green-100 text-green-700'
@@ -164,7 +164,7 @@ export default function ChambresPage() {
                         {c.statut}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-slate-800">
                       <button
                         onClick={() => handleDelete(c.id)}
                         className="text-red-500 hover:text-red-700 text-sm"

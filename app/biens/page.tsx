@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Toast from '@/app/components/Toast'
 
 type Bien = {
   id: string
@@ -21,6 +22,7 @@ export default function BiensPage() {
   const [biens, setBiens] = useState<Bien[]>([])
   const [proprietaires, setProprietaires] = useState<Proprietaire[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null)
   const [form, setForm] = useState({
     nom: '', adresse: '', type: '', proprietaireId: ''
   })
@@ -44,24 +46,46 @@ export default function BiensPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await fetch('/api/biens', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
-    })
-    setForm({ nom: '', adresse: '', type: '', proprietaireId: '' })
-    setShowForm(false)
-    fetchBiens()
+    try {
+      const res = await fetch('/api/biens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      })
+      if (res.ok) {
+        setForm({ nom: '', adresse: '', type: '', proprietaireId: '' })
+        setShowForm(false)
+        fetchBiens()
+        setToast({ message: 'Bien ajouté avec succès !', type: 'success' })
+      } else {
+        setToast({ message: "Erreur lors de l'ajout !", type: 'error' })
+      }
+    } catch {
+      setToast({ message: 'Erreur serveur !', type: 'error' })
+    }
   }
 
   const handleDelete = async (id: string) => {
-    await fetch(`/api/biens/${id}`, { method: 'DELETE' })
-    fetchBiens()
+    try {
+      const res = await fetch(`/api/biens/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        fetchBiens()
+        setToast({ message: 'Bien supprimé !', type: 'success' })
+      } else {
+        setToast({ message: 'Erreur lors de la suppression !', type: 'error' })
+      }
+    } catch {
+      setToast({ message: 'Erreur serveur !', type: 'error' })
+    }
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Sidebar */}
+
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
+
       <div className="fixed left-0 top-0 h-full w-64 bg-blue-600 text-white p-6">
         <h1 className="text-2xl font-bold mb-8">RentEase</h1>
         <nav className="space-y-2">
@@ -76,32 +100,28 @@ export default function BiensPage() {
         </nav>
       </div>
 
-      {/* Main */}
       <div className="ml-64 p-8">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-slate-800">Biens immobiliers</h2>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
+          <button onClick={() => setShowForm(!showForm)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
             + Ajouter
           </button>
         </div>
 
-        {/* Formulaire */}
         {showForm && (
           <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-            <h3 className="text-lg font-semibold mb-4">Nouveau bien</h3>
+            <h3 className="text-lg font-semibold mb-4 text-slate-800">Nouveau bien</h3>
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
               <input required placeholder="Nom du bien" value={form.nom}
                 onChange={e => setForm({...form, nom: e.target.value})}
-                className="border border-slate-300 rounded-lg px-4 py-2" />
+                className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800" />
               <input required placeholder="Adresse" value={form.adresse}
                 onChange={e => setForm({...form, adresse: e.target.value})}
-                className="border border-slate-300 rounded-lg px-4 py-2" />
+                className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800" />
               <select required value={form.type}
                 onChange={e => setForm({...form, type: e.target.value})}
-                className="border border-slate-300 rounded-lg px-4 py-2">
+                className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800">
                 <option value="">-- Type de bien --</option>
                 <option value="appartement">Appartement</option>
                 <option value="maison">Maison</option>
@@ -110,7 +130,7 @@ export default function BiensPage() {
               </select>
               <select required value={form.proprietaireId}
                 onChange={e => setForm({...form, proprietaireId: e.target.value})}
-                className="border border-slate-300 rounded-lg px-4 py-2">
+                className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800">
                 <option value="">-- Propriétaire --</option>
                 {proprietaires.map(p => (
                   <option key={p.id} value={p.id}>
@@ -132,10 +152,9 @@ export default function BiensPage() {
           </div>
         )}
 
-        {/* Tableau */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b">
+            <thead className="bg-slate-100 border-b">
               <tr>
                 <th className="text-left px-6 py-3 text-slate-600 font-medium">Nom</th>
                 <th className="text-left px-6 py-3 text-slate-600 font-medium">Adresse</th>
@@ -147,24 +166,22 @@ export default function BiensPage() {
             <tbody>
               {biens.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-slate-400">
+                  <td colSpan={5} className="text-center py-8 text-slate-600">
                     Aucun bien enregistré
                   </td>
                 </tr>
               ) : (
                 biens.map(b => (
                   <tr key={b.id} className="border-b hover:bg-slate-50">
-                    <td className="px-6 py-4">{b.nom}</td>
-                    <td className="px-6 py-4">{b.adresse}</td>
-                    <td className="px-6 py-4 capitalize">{b.type}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-slate-800">{b.nom}</td>
+                    <td className="px-6 py-4 text-slate-800">{b.adresse}</td>
+                    <td className="px-6 py-4 text-slate-800 capitalize">{b.type}</td>
+                    <td className="px-6 py-4 text-slate-800">
                       {b.proprietaire?.nom} {b.proprietaire?.prenom}
                     </td>
                     <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleDelete(b.id)}
-                        className="text-red-500 hover:text-red-700 text-sm"
-                      >
+                      <button onClick={() => handleDelete(b.id)}
+                        className="text-red-500 hover:text-red-700 text-sm">
                         Supprimer
                       </button>
                     </td>

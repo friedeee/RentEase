@@ -3,6 +3,27 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const contrat = await prisma.contrat.findUnique({
+    where: { id: params.id },
+    include: {
+      locataire: true,
+      chambre: {
+        include: {
+          bien: {
+            include: { proprietaire: true }
+          }
+        }
+      },
+      reglements: true
+    }
+  })
+  return NextResponse.json(contrat)
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
@@ -14,7 +35,6 @@ export async function PATCH(
     include: { chambre: true }
   })
 
-  // Libérer la chambre si résilié
   if (body.statut === 'résilié') {
     await prisma.chambre.update({
       where: { id: contrat.chambreId },
