@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Toast from '@/app/components/Toast'
 
 type Contrat = {
   id: string
@@ -12,7 +13,7 @@ type Contrat = {
   statut: string
   locataire: { nom: string; prenom: string }
   chambre: { numero: string; bien: { nom: string } }
-  reglements: { id: string; texte: string }[]
+  ReglementContrat: { id: string; texte: string }[]
 }
 
 type Locataire = {
@@ -42,6 +43,7 @@ export default function ContratsPage() {
   const [locataires, setLocataires] = useState<Locataire[]>([])
   const [chambres, setChambres] = useState<Chambre[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null)
   const [reglements, setReglements] = useState<string[]>(REGLEMENTS_PAR_DEFAUT)
   const [newReglement, setNewReglement] = useState('')
   const [form, setForm] = useState({
@@ -88,40 +90,62 @@ export default function ContratsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await fetch('/api/contrats', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        loyer: parseFloat(form.loyer),
-        caution: parseFloat(form.caution),
-        dateFin: form.dateFin || null,
-        reglements
+    try {
+      const res = await fetch('/api/contrats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          loyer: parseFloat(form.loyer),
+          caution: parseFloat(form.caution),
+          dateFin: form.dateFin || null,
+          reglements
+        })
       })
-    })
-    setForm({
-      locataireId: '', chambreId: '',
-      dateDebut: '', dateFin: '',
-      loyer: '', caution: ''
-    })
-    setReglements(REGLEMENTS_PAR_DEFAUT)
-    setShowForm(false)
-    fetchContrats()
-    fetchChambres()
+      if (res.ok) {
+        setForm({
+          locataireId: '', chambreId: '',
+          dateDebut: '', dateFin: '',
+          loyer: '', caution: ''
+        })
+        setReglements(REGLEMENTS_PAR_DEFAUT)
+        setShowForm(false)
+        fetchContrats()
+        fetchChambres()
+        setToast({ message: 'Contrat créé avec succès !', type: 'success' })
+      } else {
+        setToast({ message: 'Erreur lors de la création !', type: 'error' })
+      }
+    } catch {
+      setToast({ message: 'Erreur serveur !', type: 'error' })
+    }
   }
 
   const handleResilier = async (id: string) => {
-    await fetch(`/api/contrats/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ statut: 'résilié' })
-    })
-    fetchContrats()
+    try {
+      const res = await fetch(`/api/contrats/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statut: 'résilié' })
+      })
+      if (res.ok) {
+        fetchContrats()
+        setToast({ message: 'Contrat résilié !', type: 'success' })
+      } else {
+        setToast({ message: 'Erreur lors de la résiliation !', type: 'error' })
+      }
+    } catch {
+      setToast({ message: 'Erreur serveur !', type: 'error' })
+    }
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Sidebar */}
+
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
+
       <div className="fixed left-0 top-0 h-full w-64 bg-blue-600 text-white p-6">
         <h1 className="text-2xl font-bold mb-8">RentEase</h1>
         <nav className="space-y-2">
@@ -136,19 +160,15 @@ export default function ContratsPage() {
         </nav>
       </div>
 
-      {/* Main */}
-      <div className="ml-64 p-8">
+      <div className="ml-16 lg:ml-64 p-8">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-slate-800">Contrats</h2>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
+          <button onClick={() => setShowForm(!showForm)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
             + Nouveau contrat
           </button>
         </div>
 
-        {/* Formulaire */}
         {showForm && (
           <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
             <h3 className="text-lg font-semibold mb-4 text-slate-800">Nouveau contrat</h3>
@@ -159,9 +179,7 @@ export default function ContratsPage() {
                   className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800">
                   <option value="">-- Locataire --</option>
                   {locataires.map(l => (
-                    <option key={l.id} value={l.id}>
-                      {l.nom} {l.prenom}
-                    </option>
+                    <option key={l.id} value={l.id}>{l.nom} {l.prenom}</option>
                   ))}
                 </select>
                 <select required value={form.chambreId}
@@ -169,9 +187,7 @@ export default function ContratsPage() {
                   className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800">
                   <option value="">-- Chambre libre --</option>
                   {chambres.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.numero} — {c.bien?.nom}
-                    </option>
+                    <option key={c.id} value={c.id}>{c.numero} — {c.bien?.nom}</option>
                   ))}
                 </select>
                 <div>
@@ -194,30 +210,22 @@ export default function ContratsPage() {
                   className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800" />
               </div>
 
-              {/* Règlements */}
               <div className="border border-slate-200 rounded-lg p-4">
-                <h4 className="font-medium text-slate-700 mb-3">
-                  Règlements du contrat
-                </h4>
+                <h4 className="font-medium text-slate-800 mb-3">Règlements du contrat</h4>
                 <ul className="space-y-2 mb-4">
                   {reglements.map((r, i) => (
                     <li key={i} className="flex items-center justify-between bg-slate-100 px-3 py-2 rounded-lg">
                       <span className="text-sm text-slate-800">• {r}</span>
                       <button type="button" onClick={() => removeReglement(i)}
-                        className="text-red-400 hover:text-red-600 text-xs ml-2">
-                        ✕
-                      </button>
+                        className="text-red-400 hover:text-red-600 text-xs ml-2">✕</button>
                     </li>
                   ))}
                 </ul>
                 <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Ajouter un règlement..."
+                  <input type="text" placeholder="Ajouter un règlement..."
                     value={newReglement}
                     onChange={e => setNewReglement(e.target.value)}
-                    className="flex-1 border border-slate-300 rounded-lg px-4 py-2 text-sm"
-                  />
+                    className="flex-1 border border-slate-300 rounded-lg px-4 py-2 text-sm bg-white text-slate-800" />
                   <button type="button" onClick={addReglement}
                     className="bg-slate-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-800">
                     Ajouter
@@ -239,7 +247,6 @@ export default function ContratsPage() {
           </div>
         )}
 
-        {/* Tableau */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full">
             <thead className="bg-slate-100 border-b">
@@ -256,7 +263,7 @@ export default function ContratsPage() {
             <tbody>
               {contrats.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-slate-400">
+                  <td colSpan={7} className="text-center py-8 text-slate-600">
                     Aucun contrat enregistré
                   </td>
                 </tr>
@@ -274,7 +281,7 @@ export default function ContratsPage() {
                     </td>
                     <td className="px-6 py-4 text-slate-800">{c.loyer.toLocaleString()} FCFA</td>
                     <td className="px-6 py-4 text-slate-800">{c.caution.toLocaleString()} FCFA</td>
-                    <td className="px-6 py-4 text-slate-800">
+                    <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         c.statut === 'actif'
                           ? 'bg-green-100 text-green-700'
@@ -284,17 +291,13 @@ export default function ContratsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 flex gap-2">
-                      <button
-                        onClick={() => router.push(`/contrats/${c.id}/pdf`)}
-                        className="text-blue-500 hover:text-blue-700 text-sm"
-                      >
+                      <button onClick={() => router.push(`/contrats/${c.id}/pdf`)}
+                        className="text-blue-500 hover:text-blue-700 text-sm">
                         📄 PDF
                       </button>
                       {c.statut === 'actif' && (
-                        <button
-                          onClick={() => handleResilier(c.id)}
-                          className="text-red-500 hover:text-red-700 text-sm"
-                        >
+                        <button onClick={() => handleResilier(c.id)}
+                          className="text-red-500 hover:text-red-700 text-sm">
                           Résilier
                         </button>
                       )}

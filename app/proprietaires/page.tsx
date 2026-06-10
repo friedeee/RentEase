@@ -84,7 +84,7 @@ export default function ProprietairesPage() {
         </nav>
       </div>
 
-      <div className="ml-64 p-8">
+      <div className="ml-16 lg:ml-64 p-8">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-slate-800">Propriétaires</h2>
           <button onClick={() => setShowForm(!showForm)}

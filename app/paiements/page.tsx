@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Toast from '@/app/components/Toast'
 
 type Paiement = {
   id: string
@@ -25,9 +26,16 @@ export default function PaiementsPage() {
   const [paiements, setPaiements] = useState<Paiement[]>([])
   const [contrats, setContrats] = useState<Contrat[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null)
   const [form, setForm] = useState({
     contratId: '', montant: '', moisConcerne: ''
   })
+
+  const mois = [
+    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+  ]
+  const annee = new Date().getFullYear()
 
   const fetchPaiements = async () => {
     const res = await fetch('/api/paiements')
@@ -48,29 +56,35 @@ export default function PaiementsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await fetch('/api/paiements', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        montant: parseFloat(form.montant)
+    try {
+      const res = await fetch('/api/paiements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          montant: parseFloat(form.montant)
+        })
       })
-    })
-    setForm({ contratId: '', montant: '', moisConcerne: '' })
-    setShowForm(false)
-    fetchPaiements()
+      if (res.ok) {
+        setForm({ contratId: '', montant: '', moisConcerne: '' })
+        setShowForm(false)
+        fetchPaiements()
+        setToast({ message: 'Paiement enregistré avec succès !', type: 'success' })
+      } else {
+        setToast({ message: "Erreur lors de l'enregistrement !", type: 'error' })
+      }
+    } catch {
+      setToast({ message: 'Erreur serveur !', type: 'error' })
+    }
   }
-
-  const mois = [
-    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-  ]
-
-  const annee = new Date().getFullYear()
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Sidebar */}
+
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
+
       <div className="fixed left-0 top-0 h-full w-64 bg-blue-600 text-white p-6">
         <h1 className="text-2xl font-bold mb-8">RentEase</h1>
         <nav className="space-y-2">
@@ -85,24 +99,18 @@ export default function PaiementsPage() {
         </nav>
       </div>
 
-      {/* Main */}
-      <div className="ml-64 p-8">
+      <div className="ml-16 lg:ml-64 p-8">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-slate-800">Paiements</h2>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
+          <button onClick={() => setShowForm(!showForm)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
             + Enregistrer un paiement
           </button>
         </div>
 
-        {/* Formulaire */}
         {showForm && (
           <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-            <h3 className="text-lg font-semibold mb-4 text-slate-800">
-              Nouveau paiement
-            </h3>
+            <h3 className="text-lg font-semibold mb-4 text-slate-800">Nouveau paiement</h3>
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
               <select required value={form.contratId}
                 onChange={e => {
@@ -121,19 +129,35 @@ export default function PaiementsPage() {
                   </option>
                 ))}
               </select>
-              <select required value={form.moisConcerne}
-                onChange={e => setForm({...form, moisConcerne: e.target.value})}
-                className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800">
-                <option value="">-- Mois concerné --</option>
-                {mois.map(m => (
-                  <option key={m} value={`${m} ${annee}`}>
-                    {m} {annee}
-                  </option>
-                ))}
-              </select>
+
+              <div className="flex gap-2">
+                <select required value={form.moisConcerne.split(' ')[0] || ''}
+                  onChange={e => setForm({
+                    ...form,
+                    moisConcerne: `${e.target.value} ${form.moisConcerne.split(' ')[1] || annee}`
+                  })}
+                  className="flex-1 border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800">
+                  <option value="">-- Mois --</option>
+                  {mois.map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+                <select required value={form.moisConcerne.split(' ')[1] || annee}
+                  onChange={e => setForm({
+                    ...form,
+                    moisConcerne: `${form.moisConcerne.split(' ')[0] || ''} ${e.target.value}`
+                  })}
+                  className="w-28 border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800">
+                  {[annee - 1, annee, annee + 1].map(a => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+              </div>
+
               <input required type="number" placeholder="Montant (FCFA)" value={form.montant}
                 onChange={e => setForm({...form, montant: e.target.value})}
                 className="border border-slate-300 rounded-lg px-4 py-2 bg-white text-slate-800" />
+
               <div className="col-span-2 flex gap-2">
                 <button type="submit"
                   className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
@@ -148,7 +172,6 @@ export default function PaiementsPage() {
           </div>
         )}
 
-        {/* Tableau */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full">
             <thead className="bg-slate-100 border-b">
@@ -179,9 +202,7 @@ export default function PaiementsPage() {
                       Ch.{p.contrat?.chambre?.numero} — {p.contrat?.chambre?.bien?.nom}
                     </td>
                     <td className="px-6 py-4 text-slate-800">{p.moisConcerne}</td>
-                    <td className="px-6 py-4 text-slate-800">
-                      {p.montant.toLocaleString()} FCFA
-                    </td>
+                    <td className="px-6 py-4 text-slate-800">{p.montant.toLocaleString()} FCFA</td>
                     <td className="px-6 py-4 text-slate-800">
                       {new Date(p.datePaiement).toLocaleDateString('fr-FR')}
                     </td>
