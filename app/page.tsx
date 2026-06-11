@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
+import Sidebar from '@/app/components/Sidebar'
 
 const prisma = new PrismaClient()
-
 export default async function Dashboard() {
   const totalChambres = await prisma.chambre.count()
   const chambresOccupees = await prisma.chambre.count({ where: { statut: 'occupée' } })
@@ -32,25 +32,9 @@ export default async function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
 
-      {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-blue-600 text-white p-6">
-        <h1 className="text-2xl font-bold mb-8">RentEase</h1>
-        <nav className="space-y-2">
-          <a href="/" className="block px-4 py-2 rounded-lg bg-blue-700">Dashboard</a>
-          <a href="/proprietaires" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Propriétaires</a>
-          <a href="/biens" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Biens</a>
-          <a href="/chambres" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Chambres</a>
-          <a href="/locataires" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Locataires</a>
-          <a href="/contrats" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Contrats</a>
-          <a href="/paiements" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Paiements</a>
-          <a href="/recus" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Reçus</a>
-        </nav>
-      </div>
+      <Sidebar active="/" />
 
-      {/* Main */}
       <div className="ml-64 p-8">
-
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-slate-800">Tableau de bord</h2>
           <span className="text-slate-500">
@@ -61,7 +45,6 @@ export default async function Dashboard() {
           </span>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500">
             <p className="text-slate-500 text-sm">Total Chambres</p>
@@ -81,7 +64,6 @@ export default async function Dashboard() {
           </div>
         </div>
 
-        {/* Total paiements du mois */}
         <div className="bg-white rounded-xl p-6 shadow-sm mb-6 border-l-4 border-blue-500">
           <p className="text-slate-500 text-sm">Total paiements ce mois</p>
           <p className="text-3xl font-bold text-blue-600 mt-2">
@@ -89,7 +71,6 @@ export default async function Dashboard() {
           </p>
         </div>
 
-        {/* Derniers paiements */}
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-slate-800 mb-4">
             Derniers paiements du mois

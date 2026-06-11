@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Toast from '@/app/components/Toast'
+import Sidebar from '@/app/components/Sidebar'
+import { useSidebar } from '@/app/context/SidebarContext'
 
 type Chambre = {
   id: string
@@ -19,6 +21,7 @@ type Bien = {
 }
 
 export default function ChambresPage() {
+  const { collapsed } = useSidebar()
   const [chambres, setChambres] = useState<Chambre[]>([])
   const [biens, setBiens] = useState<Bien[]>([])
   const [showForm, setShowForm] = useState(false)
@@ -90,21 +93,11 @@ export default function ChambresPage() {
         <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}
 
-      <div className="fixed left-0 top-0 h-full w-64 bg-blue-600 text-white p-6">
-        <h1 className="text-2xl font-bold mb-8">RentEase</h1>
-        <nav className="space-y-2">
-          <a href="/" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Dashboard</a>
-          <a href="/proprietaires" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Propriétaires</a>
-          <a href="/biens" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Biens</a>
-          <a href="/chambres" className="block px-4 py-2 rounded-lg bg-blue-700">Chambres</a>
-          <a href="/locataires" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Locataires</a>
-          <a href="/contrats" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Contrats</a>
-          <a href="/paiements" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Paiements</a>
-          <a href="/recus" className="block px-4 py-2 rounded-lg hover:bg-blue-700">Reçus</a>
-        </nav>
-      </div>
+      <Sidebar active="/chambres" />
 
-      <div className="ml-64 p-8">
+      <div style={{ marginLeft: collapsed ? '72px' : '260px', transition: 'margin 0.3s ease' }}
+        className="p-8 pb-16">
+
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-slate-800">Chambres</h2>
           <button onClick={() => setShowForm(!showForm)}
