@@ -5,10 +5,12 @@ const prisma = new PrismaClient()
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
+
   const contrat = await prisma.contrat.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       locataire: true,
       chambre: {
@@ -18,7 +20,7 @@ export async function GET(
           }
         }
       },
-      reglements: true
+      ReglementContrat: true
     }
   })
   return NextResponse.json(contrat)
@@ -26,11 +28,12 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const body = await request.json()
   const contrat = await prisma.contrat.update({
-    where: { id: params.id },
+    where: { id },
     data: body,
     include: { chambre: true }
   })

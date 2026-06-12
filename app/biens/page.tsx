@@ -89,7 +89,7 @@ export default function BiensPage() {
         <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}
 
-      <Sidebar active="/proprietaires" />
+      <Sidebar active="/biens" />
 
       <div style={{ marginLeft: collapsed ? '72px' : '260px', transition: 'margin 0.3s ease' }} className="p-8 pb-16">
 

@@ -33,7 +33,7 @@ type Contrat = {
       }
     }
   }
-  reglements: { id: string; texte: string }[]
+  ReglementContrat: { id: string; texte: string }[]
 }
 
 export default function ContratPDFPage() {
@@ -54,7 +54,7 @@ export default function ContratPDFPage() {
 
   return (
     <div className="min-h-screen bg-slate-100 py-8">
-      {/* Bouton imprimer */}
+      {/* Boutons */}
       <div className="max-w-3xl mx-auto mb-4 flex justify-end gap-2 print:hidden">
         <button
           onClick={() => window.print()}
@@ -87,7 +87,6 @@ export default function ContratPDFPage() {
 
         {/* Parties */}
         <div className="grid grid-cols-2 gap-6 mb-8">
-          {/* Bailleur */}
           <div className="border border-slate-200 rounded-lg p-4">
             <h3 className="font-bold text-slate-800 mb-3 text-sm uppercase tracking-wide">
               Le Bailleur
@@ -111,7 +110,6 @@ export default function ContratPDFPage() {
             </p>
           </div>
 
-          {/* Locataire */}
           <div className="border border-slate-200 rounded-lg p-4">
             <h3 className="font-bold text-slate-800 mb-3 text-sm uppercase tracking-wide">
               Le Locataire
@@ -201,7 +199,7 @@ export default function ContratPDFPage() {
             Règlements et obligations
           </h3>
           <ul className="space-y-2">
-            {contrat.reglements.map((r, i) => (
+            {contrat.ReglementContrat.map((r, i) => (
               <li key={r.id} className="flex items-start gap-2 text-slate-700">
                 <span className="text-blue-600 font-bold">{i + 1}.</span>
                 {r.texte}
