@@ -1,6 +1,7 @@
 'use client'
-
-import { useEffect, useState } from 'react'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
+import { useRef, useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 
 type Contrat = {
@@ -39,12 +40,24 @@ type Contrat = {
 export default function ContratPDFPage() {
   const { id } = useParams()
   const [contrat, setContrat] = useState<Contrat | null>(null)
+  const contratRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch(`/api/contrats/${id}`)
       .then(res => res.json())
       .then(data => setContrat(data))
   }, [id])
+
+  const handleDownload = async () => {
+    if (!contratRef.current) return
+    const canvas = await html2canvas(contratRef.current, { scale: 2 })
+    const imgData = canvas.toDataURL('image/png')
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pdfWidth = pdf.internal.pageSize.getWidth()
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+    pdf.save(`Contrat_${contrat?.locataire.nom}_${contrat?.id.slice(0, 8)}.pdf`)
+  }
 
   if (!contrat) return (
     <div className="flex items-center justify-center min-h-screen">
@@ -53,14 +66,14 @@ export default function ContratPDFPage() {
   )
 
   return (
-    <div className="min-h-screen bg-slate-100 py-8">
+    <div className="min-h-screen bg-slate-100 py-8 w-full flex flex-col items-center">
       {/* Boutons */}
-      <div className="max-w-3xl mx-auto mb-4 flex justify-end gap-2 print:hidden">
+      <div className="w-full max-w-3xl mb-4 flex justify-end gap-2 px-4">
         <button
-          onClick={() => window.print()}
+          onClick={handleDownload}
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
         >
-          🖨️ Imprimer / Télécharger PDF
+          📥 Télécharger le PDF
         </button>
         <button
           onClick={() => window.history.back()}
@@ -71,7 +84,7 @@ export default function ContratPDFPage() {
       </div>
 
       {/* Contrat */}
-      <div className="max-w-3xl mx-auto bg-white shadow-lg p-12 print:shadow-none print:p-8">
+      <div ref={contratRef} className="w-full max-w-3xl bg-white shadow-lg p-12">
 
         {/* En-tête */}
         <div className="text-center mb-8 border-b pb-6">
