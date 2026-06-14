@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 type Paiement = {
   id: string
@@ -37,12 +39,24 @@ type Paiement = {
 export default function RecuPage() {
   const { id } = useParams()
   const [paiement, setPaiement] = useState<Paiement | null>(null)
+  const recuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch(`/api/paiements/${id}`)
       .then(res => res.json())
       .then(data => setPaiement(data))
   }, [id])
+
+  const handleDownload = async () => {
+    if (!recuRef.current) return
+    const canvas = await html2canvas(recuRef.current, { scale: 2 })
+    const imgData = canvas.toDataURL('image/png')
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pdfWidth = pdf.internal.pageSize.getWidth()
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+    pdf.save(`Recu_${paiement?.contrat.locataire.nom}_${paiement?.moisConcerne}.pdf`)
+  }
 
   if (!paiement) return (
     <div className="flex items-center justify-center min-h-screen">
@@ -53,14 +67,14 @@ export default function RecuPage() {
   const numeroRecu = `REC-${paiement.id.slice(0, 8).toUpperCase()}`
 
   return (
-    <div className="min-h-screen bg-slate-100 py-8">
+    <div className="min-h-screen bg-slate-100 py-8 w-full flex flex-col items-center">
       {/* Boutons */}
-      <div className="max-w-2xl mx-auto mb-4 flex justify-end gap-2 print:hidden">
+      <div className="w-full max-w-2xl mb-4 flex justify-end gap-2 px-4">
         <button
-          onClick={() => window.print()}
+          onClick={handleDownload}
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
         >
-          🖨️ Imprimer / Télécharger PDF
+          📥 Télécharger le PDF
         </button>
         <button
           onClick={() => window.history.back()}
@@ -71,7 +85,7 @@ export default function RecuPage() {
       </div>
 
       {/* Reçu */}
-      <div className="max-w-2xl mx-auto bg-white shadow-lg p-10 print:shadow-none">
+      <div ref={recuRef} className="w-full max-w-2xl bg-white shadow-lg p-10">
 
         {/* En-tête */}
         <div className="flex justify-between items-start mb-8 border-b pb-6">

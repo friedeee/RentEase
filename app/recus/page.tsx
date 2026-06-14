@@ -68,8 +68,9 @@ export default function RecusPage() {
                       {new Date(p.datePaiement).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-6 py-4">
-                      <a href={`/recus/${p.id}`} className="text-blue-500 hover:text-blue-700 text-sm">
-                        🧾 Voir le reçu
+                      <a href={`/recus/${p.id}`}
+                        className="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1.5 rounded-lg text-sm font-medium transition inline-flex items-center gap-1">
+                        <span>🧾</span> Voir le reçu
                       </a>
                     </td>
                   </tr>
