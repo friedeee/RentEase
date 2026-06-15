@@ -200,7 +200,14 @@ export default function PaiementsPage() {
                       {new Date(p.datePaiement).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                      <span style={{
+                        backgroundColor: '#dcfce7',
+                        color: '#15803d',
+                        padding: '4px 12px',
+                        borderRadius: '9999px',
+                        fontSize: '12px',
+                        fontWeight: '500'
+                      }}>
                         {p.statut}
                       </span>
                     </td>

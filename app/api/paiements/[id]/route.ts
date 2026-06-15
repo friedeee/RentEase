@@ -5,10 +5,12 @@ const prisma = new PrismaClient()
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
+
   const paiement = await prisma.paiement.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       contrat: {
         include: {
